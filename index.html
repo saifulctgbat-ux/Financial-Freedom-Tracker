@@ -1,6 +1,5 @@
 <!DOCTYPE html>
-<html lang="bn">
-<head>
+<html lang="bn"><head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
 <title>Freedom Financial System — Master Dashboard</title>
@@ -65,7 +64,7 @@ canvas{max-height:260px;}
 </style>
 </head>
 <body>
-<script id="dataStore" type="application/json">{}</script>
+<script id="dataStore" type="application/json">{"assets":[{"name":"Savings Account","category":"Cash & Bank","value":246000,"notes":"","date":"2026-01-01"},{"name":"Stock Portfolio","category":"Investments","value":180000,"notes":"Brokerage","date":"2026-01-01"},{"name":"Apartment","category":"Property","value":3500000,"notes":"Primary residence","date":"2026-01-01"}],"liabilities":[{"name":"Visa Credit Card","category":"Credit Card","balance":35000,"notes":"","date":"2026-01-01"}],"loans":[{"name":"Home Loan","lender":"City Bank","type":"Mortgage","principal":2500000,"balance":2100000,"interestRate":9.5,"monthlyPayment":28000,"startDate":"2023-04-01","termMonths":240}],"goals":[{"name":"Wedding Fund","category":"Wedding","targetAmount":800000,"currentAmount":300000,"targetDate":"2027-01-01","priority":"high"}],"budget":[{"name":"Housing","type":"expense","budget":18000},{"name":"Food","type":"expense","budget":14000},{"name":"Salary","type":"income","budget":85000}],"transactions":[{"type":"expense","date":"2026-06-05","category":"Housing","amount":18000,"note":"Rent"},{"type":"income","date":"2026-06-03","category":"Salary","amount":85000,"note":"Monthly salary"}],"subscriptions":[{"name":"Netflix","amount":800,"cycle":"monthly","category":"Entertainment","nextDate":"2026-07-15","active":true}],"emergencyFund":{"monthlyExpenses":45000,"targetMonths":6,"currentAmount":246000},"yearlySnapshots":[{"year":2025,"income":970000,"expenses":720000,"netWorth":1980000,"totalSavings":250000,"totalDebt":2320000},{"year":2026,"income":1040000,"expenses":760000,"netWorth":2496000,"totalSavings":280000,"totalDebt":2255000}],"currency":"৳"}</script>
 <div class="app">
 <aside id="sidebar">
   <div class="brand"><div class="logo">F</div><div><div style="font-weight:600;font-size:14px;">Freedom System</div><div class="badge">Master Dashboard</div></div></div>
@@ -96,6 +95,7 @@ const GOLD="#D4AF37",BLUE="#0A84FF",GREEN="#30D158",RED="#FF453A",ORANGE="#FF9F0
 const CAT_COLORS=[BLUE,GOLD,GREEN,RED,"#BF5AF2",ORANGE,"#64D2FF",GREY];
 
 let DATA = {assets:[],liabilities:[],loans:[],goals:[],budget:[],transactions:[],subscriptions:[],emergencyFund:{monthlyExpenses:0,targetMonths:6,currentAmount:0},yearlySnapshots:[],currency:"৳"};
+const PRISTINE_HTML = document.documentElement.outerHTML;
 
 const fmt=(n)=> (DATA.currency||"৳") + Math.round(n||0).toLocaleString("en-US");
 const sum=(arr,k)=>arr.reduce((a,b)=>a+(Number(b[k])||0),0);
@@ -449,10 +449,15 @@ function handleExcelFile(e){
 document.getElementById("fileInput").addEventListener("change", handleExcelFile);
 
 document.getElementById("downloadBtn").addEventListener("click", ()=>{
-  const clone = document.documentElement.cloneNode(true);
-  clone.querySelector("#downloadBtn").remove();
-  const html = "<!DOCTYPE html>\n" + clone.outerHTML;
-  const blob = new Blob([html], {type:"text/html"});
+  const safeJson = JSON.stringify(DATA).replace(/</g, "\\u003C");
+  const openTag = "<script id=\"dataStore\" type=\"application/json\">";
+  const closeTag = "<" + "/script>";
+  const html = PRISTINE_HTML.replace(
+    new RegExp(openTag.replace(/[.*+?^${}()|[\]\\]/g,'\\$&') + "[\\s\\S]*?" + closeTag.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')),
+    openTag + safeJson + closeTag
+  );
+  const finalHtml = "<!DOCTYPE html>\n" + html;
+  const blob = new Blob([finalHtml], {type:"text/html"});
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url; a.download = "index.html"; a.click();
@@ -472,6 +477,4 @@ document.getElementById("downloadBtn").addEventListener("click", ()=>{
 
 renderNav();
 renderPage();
-</script>
-</body>
-</html>
+</script></body></html>
