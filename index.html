@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html lang="bn"><head>
+<html lang="bn">
+<head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
 <title>Freedom Financial System — Master Dashboard</title>
@@ -64,37 +65,29 @@ canvas{max-height:260px;}
 </style>
 </head>
 <body>
-<script id="dataStore" type="application/json">{"assets":[{"name":"Savings Account","category":"Cash & Bank","value":246000,"notes":"","date":"2026-01-01"},{"name":"Stock Portfolio","category":"Investments","value":180000,"notes":"Brokerage","date":"2026-01-01"},{"name":"Apartment","category":"Property","value":3500000,"notes":"Primary residence","date":"2026-01-01"}],"liabilities":[{"name":"Visa Credit Card","category":"Credit Card","balance":35000,"notes":"","date":"2026-01-01"}],"loans":[{"name":"Home Loan","lender":"City Bank","type":"Mortgage","principal":2500000,"balance":2100000,"interestRate":9.5,"monthlyPayment":28000,"startDate":"2023-04-01","termMonths":240}],"goals":[{"name":"Wedding Fund","category":"Wedding","targetAmount":800000,"currentAmount":300000,"targetDate":"2027-01-01","priority":"high"}],"budget":[{"name":"Housing","type":"expense","budget":18000},{"name":"Food","type":"expense","budget":14000},{"name":"Salary","type":"income","budget":85000}],"transactions":[{"type":"income","date":"2026-06-03","category":"Salary","amount":85000,"note":"Monthly salary"},{"type":"expense","date":"2026-06-05","category":"Housing","amount":18000,"note":"Rent"}],"subscriptions":[{"name":"Netflix","amount":800,"cycle":"monthly","category":"Entertainment","nextDate":"2026-07-15","active":true}],"emergencyFund":{"monthlyExpenses":45000,"targetMonths":6,"currentAmount":246000},"yearlySnapshots":[{"year":2025,"income":970000,"expenses":720000,"netWorth":1980000,"totalSavings":250000,"totalDebt":2320000},{"year":2026,"income":1040000,"expenses":760000,"netWorth":2496000,"totalSavings":280000,"totalDebt":2255000}],"currency":"৳"}</script>
+<script id="dataStore" type="application/json">{}</script>
 <div class="app">
 <aside id="sidebar">
   <div class="brand"><div class="logo">F</div><div><div style="font-weight:600;font-size:14px;">Freedom System</div><div class="badge">Master Dashboard</div></div></div>
-  <nav id="navList"><button data-k="overview" class="">📊 Overview</button><button data-k="networth" class="active">💰 Net Worth</button><button data-k="assets" class="">🏦 Assets</button><button data-k="liabilities" class="">💳 Liabilities</button><button data-k="loans" class="">🏛 Loans</button><button data-k="debt" class="">⚠️ Debt Summary</button><button data-k="goals" class="">🎯 Goals</button><button data-k="emergency" class="">🛡 Emergency Fund</button><button data-k="health" class="">❤️ Financial Health</button><button data-k="budget" class="">👛 Budget</button><button data-k="income" class="">📈 Income</button><button data-k="expense" class="">📉 Expense</button><button data-k="cashflow" class="">↕️ Cash Flow</button><button data-k="subs" class="">🔁 Subscriptions</button><button data-k="yearly" class="">📅 Yearly Comparison</button><button data-k="reports" class="">📄 Report</button></nav>
+  <nav id="navList"></nav>
   <div class="card" style="margin-top:18px;">
     <div class="badge">Net Worth</div>
-    <div id="sideNW" style="font-size:19px;font-weight:700;color:var(--gold);margin-top:4px;">৳1,791,000</div>
+    <div id="sideNW" style="font-size:19px;font-weight:700;color:var(--gold);margin-top:4px;">৳0</div>
     <label class="btn ghost" id="uploadLabel" style="display:block;text-align:center;margin-top:12px;cursor:pointer;">
       📤 Excel আপলোড / আপডেট
       <input type="file" id="fileInput" accept=".xlsx,.xls" style="display:none;">
     </label>
-    
+    <button class="btn" id="downloadBtn" style="display:none;width:100%;margin-top:8px;">⬇️ Download for GitHub</button>
   </div>
 </aside>
 <div class="overlay" id="overlay"></div>
 <main>
   <div class="topbar">
     <button class="hamburger" id="hamburger">☰</button>
-    <div class="badge" id="pageTitle" style="text-transform:uppercase;letter-spacing:1px;">💰 Net Worth</div>
+    <div class="badge" id="pageTitle" style="text-transform:uppercase;letter-spacing:1px;"></div>
     <div style="width:38px;" class="hamburger"></div>
   </div>
-  <div id="content"><div class="sub">যা আছে বনাম যা দেনা</div>
-  <div class="grid g4" style="margin-bottom:16px;">
-   <div class="card"><div class="kpi-label">Net Worth</div><div class="kpi-val" style="color:#D4AF37">৳1,791,000</div></div><div class="card"><div class="kpi-label">Total Assets</div><div class="kpi-val" style="color:#0A84FF">৳3,926,000</div></div><div class="card"><div class="kpi-label">Total Debt</div><div class="kpi-val" style="color:#FF453A">৳2,135,000</div></div>
-   <div class="card"><div class="kpi-label">Debt/Asset Ratio</div><div class="kpi-val" style="color:#FF9F0A">54%</div></div>
-  </div>
-  <div class="grid g2">
-   <div class="card"><div style="font-weight:600;margin-bottom:10px;">Asset Breakdown</div><canvas id="nw_a" style="display: block; box-sizing: border-box; height: 260px; width: 561px;" width="701" height="325"></canvas></div>
-   <div class="card"><div style="font-weight:600;margin-bottom:10px;">Debt Breakdown</div><canvas id="nw_d" style="display: block; box-sizing: border-box; height: 260px; width: 561px;" width="701" height="325"></canvas></div>
-  </div></div>
+  <div id="content"></div>
 </main>
 </div>
 
@@ -480,6 +473,5 @@ document.getElementById("downloadBtn").addEventListener("click", ()=>{
 renderNav();
 renderPage();
 </script>
-
-
-</body></html>
+</body>
+</html>
