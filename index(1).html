@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="bn"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<title>Freedom Financial System — Master Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{--gold:#D4AF37;--blue:#0A84FF;--green:#30D158;--red:#FF453A;--orange:#FF9F0A;--grey:#8E8E93;}
+*{box-sizing:border-box;}
+body{margin:0;background:#000;color:#F5F5F7;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display',Inter,sans-serif;}
+.app{display:flex;min-height:100vh;}
+aside{width:230px;min-width:230px;border-right:1px solid rgba(255,255,255,.06);padding:24px 14px;position:sticky;top:0;height:100vh;overflow-y:auto;}
+.brand{display:flex;align-items:center;gap:10px;padding:0 8px;margin-bottom:20px;}
+.brand .logo{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,#D4AF37,#8A6E1F);display:flex;align-items:center;justify-content:center;font-weight:700;color:#000;}
+nav button{display:flex;align-items:center;gap:10px;width:100%;padding:9px 12px;border-radius:10px;border:none;background:transparent;color:#9A9AA0;font-size:13px;cursor:pointer;text-align:left;margin-bottom:2px;}
+nav button.active{background:rgba(255,255,255,.08);color:#fff;font-weight:600;}
+nav button:hover{background:rgba(255,255,255,.04);}
+main{flex:1;padding:26px 34px;max-width:1280px;margin:0 auto;width:100%;}
+.card{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:16px;padding:18px;}
+.grid{display:grid;gap:14px;}
+.g2{grid-template-columns:1fr 1fr;} .g3{grid-template-columns:repeat(3,1fr);} .g4{grid-template-columns:repeat(4,1fr);}
+.kpi-label{font-size:11.5px;color:var(--grey);} .kpi-val{font-size:20px;font-weight:700;margin-top:6px;}
+table{width:100%;border-collapse:collapse;font-size:12.5px;}
+th{text-align:left;color:var(--grey);font-weight:500;font-size:11px;padding:8px 10px;border-bottom:1px solid rgba(255,255,255,.08);}
+td{padding:8px 10px;border-bottom:1px solid rgba(255,255,255,.04);}
+h2{font-size:22px;margin:0 0 4px;} .sub{color:var(--grey);font-size:12.5px;margin-bottom:18px;}
+.pill{padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600;display:inline-block;}
+.bar{height:6px;border-radius:4px;background:rgba(255,255,255,.08);overflow:hidden;}
+.bar>div{height:100%;border-radius:4px;}
+.uploadZone{border:2px dashed rgba(255,255,255,.15);border-radius:16px;padding:50px 20px;text-align:center;color:var(--grey);cursor:pointer;}
+.uploadZone:hover{border-color:var(--gold);color:#fff;}
+.btn{background:var(--gold);color:#000;border:none;border-radius:9px;padding:9px 16px;font-weight:600;font-size:12.5px;cursor:pointer;}
+.btn.ghost{background:rgba(255,255,255,.07);color:#fff;}
+.topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;gap:10px;}
+.section{display:none;} .section.active{display:block;}
+canvas{max-height:260px;}
+.badge{font-size:10px;color:var(--grey);}
+.emptyState{padding:30px;text-align:center;color:var(--grey);font-size:12.5px;}
+.tableWrap{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+.hamburger{display:none;background:rgba(255,255,255,.07);border:none;border-radius:8px;width:38px;height:38px;color:#fff;font-size:18px;cursor:pointer;flex-shrink:0;}
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:40;}
+
+@media (max-width:860px){
+  main{padding:16px;}
+  h2{font-size:19px;}
+  .g4{grid-template-columns:repeat(2,1fr);}
+  .g3{grid-template-columns:repeat(2,1fr);}
+  .g2{grid-template-columns:1fr;}
+  .hamburger{display:block;}
+  aside{position:fixed;left:-260px;top:0;height:100vh;width:230px;z-index:50;background:#000;transition:left .25s ease;box-shadow:0 0 30px rgba(0,0,0,.6);}
+  aside.open{left:0;}
+  aside.open ~ .overlay,.overlay.open{display:block;}
+  .card{padding:14px;}
+  table{font-size:11.5px;}
+  th,td{padding:7px 6px;white-space:nowrap;}
+  .topbar .badge{font-size:10px;}
+}
+@media (max-width:480px){
+  .g4,.g3{grid-template-columns:1fr;}
+  main{padding:12px;}
+  .card{padding:12px;}
+}
+</style>
+</head>
+<body>
+<script id="dataStore" type="application/json">{"assets":[{"name":"Savings Account","category":"Cash & Bank","value":246000,"notes":"","date":"2026-01-01"},{"name":"Stock Portfolio","category":"Investments","value":180000,"notes":"Brokerage","date":"2026-01-01"},{"name":"Apartment","category":"Property","value":3500000,"notes":"Primary residence","date":"2026-01-01"}],"liabilities":[{"name":"Visa Credit Card","category":"Credit Card","balance":35000,"notes":"","date":"2026-01-01"}],"loans":[{"name":"Home Loan","lender":"City Bank","type":"Mortgage","principal":2500000,"balance":2100000,"interestRate":9.5,"monthlyPayment":28000,"startDate":"2023-04-01","termMonths":240}],"goals":[{"name":"Wedding Fund","category":"Wedding","targetAmount":800000,"currentAmount":300000,"targetDate":"2027-01-01","priority":"high"}],"budget":[{"name":"Housing","type":"expense","budget":18000},{"name":"Food","type":"expense","budget":14000},{"name":"Salary","type":"income","budget":85000}],"transactions":[{"type":"income","date":"2026-06-03","category":"Salary","amount":85000,"note":"Monthly salary"},{"type":"expense","date":"2026-06-05","category":"Housing","amount":18000,"note":"Rent"}],"subscriptions":[{"name":"Netflix","amount":800,"cycle":"monthly","category":"Entertainment","nextDate":"2026-07-15","active":true}],"emergencyFund":{"monthlyExpenses":45000,"targetMonths":6,"currentAmount":246000},"yearlySnapshots":[{"year":2025,"income":970000,"expenses":720000,"netWorth":1980000,"totalSavings":250000,"totalDebt":2320000},{"year":2026,"income":1040000,"expenses":760000,"netWorth":2496000,"totalSavings":280000,"totalDebt":2255000}],"currency":"৳"}</script>
+<div class="app">
+<aside id="sidebar">
+  <div class="brand"><div class="logo">F</div><div><div style="font-weight:600;font-size:14px;">Freedom System</div><div class="badge">Master Dashboard</div></div></div>
+  <nav id="navList"><button data-k="overview" class="">📊 Overview</button><button data-k="networth" class="active">💰 Net Worth</button><button data-k="assets" class="">🏦 Assets</button><button data-k="liabilities" class="">💳 Liabilities</button><button data-k="loans" class="">🏛 Loans</button><button data-k="debt" class="">⚠️ Debt Summary</button><button data-k="goals" class="">🎯 Goals</button><button data-k="emergency" class="">🛡 Emergency Fund</button><button data-k="health" class="">❤️ Financial Health</button><button data-k="budget" class="">👛 Budget</button><button data-k="income" class="">📈 Income</button><button data-k="expense" class="">📉 Expense</button><button data-k="cashflow" class="">↕️ Cash Flow</button><button data-k="subs" class="">🔁 Subscriptions</button><button data-k="yearly" class="">📅 Yearly Comparison</button><button data-k="reports" class="">📄 Report</button></nav>
+  <div class="card" style="margin-top:18px;">
+    <div class="badge">Net Worth</div>
+    <div id="sideNW" style="font-size:19px;font-weight:700;color:var(--gold);margin-top:4px;">৳1,791,000</div>
+    <label class="btn ghost" id="uploadLabel" style="display:block;text-align:center;margin-top:12px;cursor:pointer;">
+      📤 Excel আপলোড / আপডেট
+      <input type="file" id="fileInput" accept=".xlsx,.xls" style="display:none;">
+    </label>
+    
+  </div>
+</aside>
+<div class="overlay" id="overlay"></div>
+<main>
+  <div class="topbar">
+    <button class="hamburger" id="hamburger">☰</button>
+    <div class="badge" id="pageTitle" style="text-transform:uppercase;letter-spacing:1px;">💰 Net Worth</div>
+    <div style="width:38px;" class="hamburger"></div>
+  </div>
+  <div id="content"><div class="sub">যা আছে বনাম যা দেনা</div>
+  <div class="grid g4" style="margin-bottom:16px;">
+   <div class="card"><div class="kpi-label">Net Worth</div><div class="kpi-val" style="color:#D4AF37">৳1,791,000</div></div><div class="card"><div class="kpi-label">Total Assets</div><div class="kpi-val" style="color:#0A84FF">৳3,926,000</div></div><div class="card"><div class="kpi-label">Total Debt</div><div class="kpi-val" style="color:#FF453A">৳2,135,000</div></div>
+   <div class="card"><div class="kpi-label">Debt/Asset Ratio</div><div class="kpi-val" style="color:#FF9F0A">54%</div></div>
+  </div>
+  <div class="grid g2">
+   <div class="card"><div style="font-weight:600;margin-bottom:10px;">Asset Breakdown</div><canvas id="nw_a" style="display: block; box-sizing: border-box; height: 260px; width: 561px;" width="701" height="325"></canvas></div>
+   <div class="card"><div style="font-weight:600;margin-bottom:10px;">Debt Breakdown</div><canvas id="nw_d" style="display: block; box-sizing: border-box; height: 260px; width: 561px;" width="701" height="325"></canvas></div>
+  </div></div>
+</main>
+</div>
+
+<script>
+const GOLD="#D4AF37",BLUE="#0A84FF",GREEN="#30D158",RED="#FF453A",ORANGE="#FF9F0A",GREY="#8E8E93";
+const CAT_COLORS=[BLUE,GOLD,GREEN,RED,"#BF5AF2",ORANGE,"#64D2FF",GREY];
+
+let DATA = {assets:[],liabilities:[],loans:[],goals:[],budget:[],transactions:[],subscriptions:[],emergencyFund:{monthlyExpenses:0,targetMonths:6,currentAmount:0},yearlySnapshots:[],currency:"৳"};
+
+const fmt=(n)=> (DATA.currency||"৳") + Math.round(n||0).toLocaleString("en-US");
+const sum=(arr,k)=>arr.reduce((a,b)=>a+(Number(b[k])||0),0);
+function groupBy(arr,catKey,valKey){
+  const m={}; arr.forEach(x=>{m[x[catKey]]=(m[x[catKey]]||0)+Number(x[valKey]||0);});
+  return Object.entries(m).map(([name,value],i)=>({name,value,color:CAT_COLORS[i%CAT_COLORS.length]}));
+}
+const totalAssets=()=>sum(DATA.assets,"value");
+const totalLiab=()=>sum(DATA.liabilities,"balance");
+const totalLoan=()=>sum(DATA.loans,"balance");
+const totalDebt=()=>totalLiab()+totalLoan();
+const netWorth=()=>totalAssets()-totalDebt();
+const monthKey=(d)=>String(d||"").slice(0,7);
+const monthLabel=(mk)=>{ if(!mk) return ""; const [y,m]=mk.split("-").map(Number); return new Date(y,m-1,1).toLocaleDateString("en-US",{month:"short",year:"numeric"}); };
+
+const nav=[
+ {key:"overview",label:"📊 Overview"},
+ {key:"networth",label:"💰 Net Worth"},
+ {key:"assets",label:"🏦 Assets"},
+ {key:"liabilities",label:"💳 Liabilities"},
+ {key:"loans",label:"🏛 Loans"},
+ {key:"debt",label:"⚠️ Debt Summary"},
+ {key:"goals",label:"🎯 Goals"},
+ {key:"emergency",label:"🛡 Emergency Fund"},
+ {key:"health",label:"❤️ Financial Health"},
+ {key:"budget",label:"👛 Budget"},
+ {key:"income",label:"📈 Income"},
+ {key:"expense",label:"📉 Expense"},
+ {key:"cashflow",label:"↕️ Cash Flow"},
+ {key:"subs",label:"🔁 Subscriptions"},
+ {key:"yearly",label:"📅 Yearly Comparison"},
+ {key:"reports",label:"📄 Report"},
+];
+let active="overview";
+
+function renderNav(){
+  document.getElementById("navList").innerHTML = nav.map(n=>`<button data-k="${n.key}" class="${active===n.key?'active':''}">${n.label}</button>`).join("");
+  [...document.querySelectorAll("nav button")].forEach(b=>b.onclick=()=>{active=b.dataset.k;renderNav();renderPage();closeSidebar();});
+}
+function closeSidebar(){
+  document.getElementById("sidebar").classList.remove("open");
+  document.getElementById("overlay").classList.remove("open");
+}
+document.getElementById("hamburger").addEventListener("click", ()=>{
+  document.getElementById("sidebar").classList.toggle("open");
+  document.getElementById("overlay").classList.toggle("open");
+});
+document.getElementById("overlay").addEventListener("click", closeSidebar);
+
+function charts(){return {}} // placeholder cleared each render via canvas re-creation
+
+function renderPage(){
+  document.getElementById("pageTitle").textContent = nav.find(n=>n.key===active).label;
+  document.getElementById("sideNW").textContent = fmt(netWorth());
+  const c = document.getElementById("content");
+  const hasData = DATA.assets.length||DATA.liabilities.length||DATA.transactions.length||DATA.loans.length;
+  if(!hasData){
+    c.innerHTML = `<div class="uploadZone" onclick="document.getElementById('fileInput').click()">
+      <div style="font-size:38px;">📥</div>
+      <div style="font-size:15px;font-weight:600;margin:10px 0 4px;color:#fff;">FFS_Master_Template.xlsx আপলোড করুন</div>
+      <div>একবার আপলোড করলেই সব ট্র্যাকার (Net Worth, Assets, Liabilities, Loans, Goals, Budget, Income/Expense, Subscriptions, Yearly) অটো তৈরি হয়ে যাবে</div>
+    </div>`;
+    return;
+  }
+  const fns = {overview:pOverview,networth:pNetWorth,assets:pAssets,liabilities:pLiab,loans:pLoans,debt:pDebt,goals:pGoals,emergency:pEmergency,health:pHealth,budget:pBudget,income:()=>pTx("income"),expense:()=>pTx("expense"),cashflow:pCashflow,subs:pSubs,yearly:pYearly,reports:pReports};
+  c.innerHTML = fns[active]();
+  setTimeout(drawCharts,0);
+}
+
+let pendingCharts=[];
+function chartCanvas(id,type,cfg){ pendingCharts.push({id,type,cfg}); return `<canvas id="${id}"></canvas>`; }
+function drawCharts(){
+  pendingCharts.forEach(p=>{
+    const el=document.getElementById(p.id); if(!el) return;
+    new Chart(el.getContext("2d"), {type:p.type, data:p.cfg.data, options:p.cfg.options||{}});
+  });
+  pendingCharts=[];
+}
+function tooltipColor(){return {plugins:{legend:{labels:{color:"#EBEBF0"}}},scales:{x:{ticks:{color:GREY},grid:{color:"rgba(255,255,255,.05)"}},y:{ticks:{color:GREY},grid:{color:"rgba(255,255,255,.05)"}}}};}
+
+function kpi(label,val,color){return `<div class="card"><div class="kpi-label">${label}</div><div class="kpi-val" style="color:${color||'#fff'}">${val}</div></div>`;}
+function tableHTML(headers,rows){
+  if(!rows.length) return `<div class="emptyState">কোনো ডাটা নেই</div>`;
+  return `<div class="tableWrap"><table><thead><tr>${headers.map(h=>`<th>${h}</th>`).join("")}</tr></thead><tbody>${rows.join("")}</tbody></table></div>`;
+}
+
+/* ---------- OVERVIEW ---------- */
+function pOverview(){
+  const nw=netWorth(), as=totalAssets(), db=totalDebt();
+  const mk = DATA.transactions.length? monthKey(DATA.transactions.sort((a,b)=>b.date.localeCompare(a.date))[0].date) : "";
+  const mtx = DATA.transactions.filter(t=>monthKey(t.date)===mk);
+  const inc = sum(mtx.filter(t=>t.type==='income'),'amount'), exp = sum(mtx.filter(t=>t.type==='expense'),'amount');
+  const split = groupBy(DATA.assets,"category","value");
+  return `<div class="sub">সংক্ষিপ্ত আর্থিক চিত্র</div>
+  <div class="grid g4" style="margin-bottom:16px;">
+   ${kpi("Net Worth",fmt(nw),GOLD)}
+   ${kpi("Total Assets",fmt(as),BLUE)}
+   ${kpi("Total Debt",fmt(db),RED)}
+   ${kpi("This Month Net",fmt(inc-exp),(inc-exp)>=0?GREEN:RED)}
+  </div>
+  <div class="grid g2">
+    <div class="card"><div style="font-weight:600;margin-bottom:10px;">Asset Split</div>${chartCanvas("ov_pie","doughnut",{data:{labels:split.map(s=>s.name),datasets:[{data:split.map(s=>s.value),backgroundColor:split.map(s=>s.color)}]},options:{plugins:{legend:{labels:{color:"#EBEBF0"}}}}})}</div>
+    <div class="card"><div style="font-weight:600;margin-bottom:10px;">Yearly Net Worth</div>${chartCanvas("ov_line","line",{data:{labels:DATA.yearlySnapshots.map(s=>s.year),datasets:[{label:"Net Worth",data:DATA.yearlySnapshots.map(s=>s.netWorth),borderColor:GOLD,backgroundColor:"rgba(212,175,55,.25)",fill:true,tension:.3}]},options:tooltipColor()})}</div>
+  </div>`;
+}
+
+/* ---------- NET WORTH ---------- */
+function pNetWorth(){
+  const as=totalAssets(), db=totalDebt(), nw=as-db;
+  const aSplit=groupBy(DATA.assets,"category","value");
+  const dSplit=groupBy([...DATA.liabilities.map(l=>({category:l.category,balance:l.balance})),...DATA.loans.map(l=>({category:l.type,balance:l.balance}))],"category","balance");
+  return `<div class="sub">যা আছে বনাম যা দেনা</div>
+  <div class="grid g4" style="margin-bottom:16px;">
+   ${kpi("Net Worth",fmt(nw),GOLD)}${kpi("Total Assets",fmt(as),BLUE)}${kpi("Total Debt",fmt(db),RED)}
+   ${kpi("Debt/Asset Ratio", as? Math.round(db/as*100)+"%":"—", ORANGE)}
+  </div>
+  <div class="grid g2">
+   <div class="card"><div style="font-weight:600;margin-bottom:10px;">Asset Breakdown</div>${chartCanvas("nw_a","doughnut",{data:{labels:aSplit.map(s=>s.name),datasets:[{data:aSplit.map(s=>s.value),backgroundColor:aSplit.map(s=>s.color)}]},options:{plugins:{legend:{labels:{color:"#EBEBF0"}}}}})}</div>
+   <div class="card"><div style="font-weight:600;margin-bottom:10px;">Debt Breakdown</div>${chartCanvas("nw_d","doughnut",{data:{labels:dSplit.map(s=>s.name),datasets:[{data:dSplit.map(s=>s.value),backgroundColor:dSplit.map(s=>s.color)}]},options:{plugins:{legend:{labels:{color:"#EBEBF0"}}}}})}</div>
+  </div>`;
+}
+
+/* ---------- ASSETS ---------- */
+function pAssets(){
+  const split=groupBy(DATA.assets,"category","value");
+  const rows = [...DATA.assets].sort((a,b)=>b.value-a.value).map(a=>`<tr><td>${a.name}</td><td style="color:${GREY}">${a.category}</td><td style="font-weight:600;">${fmt(a.value)}</td></tr>`);
+  return `<div class="sub">আপনার সব সম্পদ</div>
+  <div class="grid g3" style="margin-bottom:16px;">${kpi("Total Assets",fmt(totalAssets()),GOLD)}${kpi("Item Count",DATA.assets.length)}${kpi("Categories",split.length)}</div>
+  <div class="grid g2">
+   <div class="card">${chartCanvas("as_pie","doughnut",{data:{labels:split.map(s=>s.name),datasets:[{data:split.map(s=>s.value),backgroundColor:split.map(s=>s.color)}]},options:{plugins:{legend:{labels:{color:"#EBEBF0"}}}}})}</div>
+   <div class="card">${tableHTML(["Asset","Category","Value"],rows)}</div>
+  </div>`;
+}
+
+/* ---------- LIABILITIES ---------- */
+function pLiab(){
+  const split=groupBy(DATA.liabilities,"category","balance");
+  const rows=[...DATA.liabilities].sort((a,b)=>b.balance-a.balance).map(l=>`<tr><td>${l.name}</td><td style="color:${GREY}">${l.category}</td><td style="font-weight:600;color:${RED}">${fmt(l.balance)}</td></tr>`);
+  return `<div class="sub">স্বল্পমেয়াদী দায়</div>
+  <div class="grid g2" style="margin-bottom:16px;">${kpi("Total Liabilities",fmt(totalLiab()),RED)}${kpi("Item Count",DATA.liabilities.length)}</div>
+  <div class="grid g2">
+   <div class="card">${chartCanvas("li_pie","doughnut",{data:{labels:split.map(s=>s.name),datasets:[{data:split.map(s=>s.value),backgroundColor:split.map(s=>s.color)}]},options:{plugins:{legend:{labels:{color:"#EBEBF0"}}}}})}</div>
+   <div class="card">${tableHTML(["Liability","Category","Balance"],rows)}</div>
+  </div>`;
+}
+
+/* ---------- LOANS ---------- */
+function pLoans(){
+  const rows = [...DATA.loans].sort((a,b)=>b.balance-a.balance).map(l=>{
+    const paid = l.principal? Math.max(0,Math.min(100,((l.principal-l.balance)/l.principal)*100)):0;
+    return `<div class="card" style="margin-bottom:12px;">
+      <div style="display:flex;justify-content:space-between;"><div><b>${l.name}</b><div class="badge">${l.type} · ${l.lender||'—'} · ${l.interestRate}% APR</div></div>
+      <div style="text-align:right;"><div>${fmt(l.balance)}</div><div class="badge">of ${fmt(l.principal)}</div></div></div>
+      <div class="bar" style="margin-top:10px;"><div style="width:${paid}%;background:${GOLD}"></div></div>
+      <div class="badge" style="margin-top:4px;">${Math.round(paid)}% paid off · monthly ${fmt(l.monthlyPayment)}</div>
+    </div>`;
+  }).join("");
+  return `<div class="sub">Mortgage, car loan ইত্যাদি</div>
+  <div class="grid g2" style="margin-bottom:16px;">${kpi("Total Loan Balance",fmt(totalLoan()),RED)}${kpi("Monthly Payments",fmt(sum(DATA.loans,"monthlyPayment")))}</div>
+  ${rows || '<div class="card"><div class="emptyState">কোনো লোন নেই</div></div>'}`;
+}
+
+/* ---------- DEBT SUMMARY ---------- */
+function pDebt(){
+  const combined=[...DATA.liabilities.map(l=>({name:l.name,category:l.category,balance:l.balance,rate:0,kind:"Liability"})),
+                  ...DATA.loans.map(l=>({name:l.name,category:l.type,balance:l.balance,rate:l.interestRate,kind:"Loan"}))].sort((a,b)=>b.balance-a.balance);
+  const as=totalAssets(); const db=totalDebt();
+  const rows = combined.map(d=>`<tr><td>${d.name}<div class="badge">${d.kind}</div></td><td style="color:${GREY}">${d.category}</td><td style="color:${RED};font-weight:600;">${fmt(d.balance)}</td><td>${d.kind==="Loan"?d.rate+"%":"—"}</td></tr>`);
+  return `<div class="sub">Liabilities + Loans একত্রে</div>
+  <div class="grid g3" style="margin-bottom:16px;">${kpi("Total Debt",fmt(db),RED)}${kpi("Debt/Asset",as?Math.round(db/as*100)+"%":"—",ORANGE)}${kpi("Items",combined.length)}</div>
+  <div class="card">${tableHTML(["Debt","Category","Balance","Rate"],rows)}</div>`;
+}
+
+/* ---------- GOALS ---------- */
+function pGoals(){
+  const cards = DATA.goals.map(g=>{
+    const pct = g.targetAmount? Math.min(100,(g.currentAmount/g.targetAmount)*100):0;
+    return `<div class="card">
+      <div style="display:flex;justify-content:space-between;"><b>${g.name}</b><span class="badge">${g.priority}</span></div>
+      <div class="badge">${g.category} · target ${g.targetDate}</div>
+      <div style="margin:10px 0;"><div class="bar"><div style="width:${pct}%;background:${GOLD}"></div></div></div>
+      <div class="badge">${fmt(g.currentAmount)} of ${fmt(g.targetAmount)} (${Math.round(pct)}%)</div>
+    </div>`;
+  }).join("");
+  return `<div class="sub">সেভিংস টার্গেট</div>
+  <div class="grid g3" style="margin-bottom:16px;">${kpi("Saved",fmt(sum(DATA.goals,"currentAmount")),GREEN)}${kpi("Target",fmt(sum(DATA.goals,"targetAmount")))}${kpi("Goals",DATA.goals.length)}</div>
+  <div class="grid g3">${cards||'<div class="emptyState">কোনো গোল নেই</div>'}</div>`;
+}
+
+/* ---------- EMERGENCY FUND ---------- */
+function pEmergency(){
+  const ef=DATA.emergencyFund;
+  const target = ef.monthlyExpenses*ef.targetMonths;
+  const months = ef.monthlyExpenses? ef.currentAmount/ef.monthlyExpenses:0;
+  const pct = target? Math.min(100,(ef.currentAmount/target)*100):0;
+  const status = months>=ef.targetMonths? ["Fully funded",GREEN] : months>=ef.targetMonths*0.5? ["Halfway there",ORANGE]:["Below recommended",RED];
+  return `<div class="sub">জরুরি তহবিল</div>
+  <div class="grid g4" style="margin-bottom:16px;">
+   ${kpi("Current Balance",fmt(ef.currentAmount),GREEN)}${kpi("Target ("+ef.targetMonths+" mo)",fmt(target))}
+   ${kpi("Months Covered",months.toFixed(1))}${kpi("Status",status[0],status[1])}
+  </div>
+  <div class="card"><div class="bar" style="height:10px;"><div style="width:${pct}%;background:${status[1]};height:100%;"></div></div><div class="badge" style="margin-top:6px;">${Math.round(pct)}% funded</div></div>`;
+}
+
+/* ---------- FINANCIAL HEALTH ---------- */
+function pHealth(){
+  const snaps=[...DATA.yearlySnapshots].sort((a,b)=>a.year-b.year);
+  const snap=snaps[snaps.length-1], prior=snaps.length>1?snaps[snaps.length-2]:null;
+  const savingsRate = snap&&snap.income? ((snap.income-snap.expenses)/snap.income)*100:0;
+  const savingsScore=Math.min(100,Math.max(0,(savingsRate/30)*100));
+  const ef=DATA.emergencyFund; const monthsCovered=ef.monthlyExpenses? ef.currentAmount/ef.monthlyExpenses:0;
+  const efScore=Math.min(100,Math.max(0,(monthsCovered/(ef.targetMonths||1))*100));
+  const as=totalAssets(),db=totalDebt(); const dta=as?(db/as)*100:100; const debtScore=Math.min(100,Math.max(0,100-dta));
+  const nw=netWorth(); const nwGrowth= prior&&prior.netWorth? ((nw-prior.netWorth)/Math.abs(prior.netWorth))*100:0;
+  const growthScore=Math.min(100,Math.max(0,50+nwGrowth*2.5));
+  const goalProgress = DATA.goals.length? DATA.goals.reduce((a,g)=>a+(g.targetAmount?(g.currentAmount/g.targetAmount)*100:0),0)/DATA.goals.length : 50;
+  const factors=[["Savings Rate",savingsScore],["Emergency Fund",efScore],["Debt-to-Asset",debtScore],["Net Worth Growth",growthScore],["Goal Progress",goalProgress]];
+  const overall=Math.round(factors.reduce((a,f)=>a+f[1],0)/factors.length);
+  let grade = overall>=90?"A+":overall>=80?"A":overall>=70?"B":overall>=60?"C":overall>=50?"D":"F";
+  const rows = factors.map(f=>`<div style="margin-bottom:12px;"><div style="display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:5px;"><span>${f[0]}</span><span>${Math.round(f[1])}</span></div><div class="bar"><div style="width:${f[1]}%;background:${f[1]>=70?GREEN:f[1]>=40?ORANGE:RED}"></div></div></div>`).join("");
+  return `<div class="sub">সামগ্রিক আর্থিক স্বাস্থ্য</div>
+  <div class="grid g2">
+    <div class="card" style="text-align:center;"><div style="font-size:40px;font-weight:700;">${overall}</div><div class="badge">out of 100</div><div class="pill" style="background:${GOLD}22;color:${GOLD};margin-top:8px;">Grade ${grade}</div></div>
+    <div class="card">${rows}</div>
+  </div>`;
+}
+
+/* ---------- BUDGET ---------- */
+function pBudget(){
+  const exp=DATA.budget.filter(b=>b.type==='expense'), inc=DATA.budget.filter(b=>b.type==='income');
+  const row=c=>`<tr><td>${c.name}</td><td style="font-weight:600;">${fmt(c.budget)}</td></tr>`;
+  return `<div class="sub">মাসিক বাজেট পরিকল্পনা</div>
+  <div class="grid g2" style="margin-bottom:16px;">${kpi("Budgeted Expenses",fmt(sum(exp,"budget")))}${kpi("Budgeted Income",fmt(sum(inc,"budget")),GREEN)}</div>
+  <div class="grid g2">
+   <div class="card"><div style="font-weight:600;margin-bottom:8px;">Expense Categories</div>${tableHTML(["Category","Budget"],exp.map(row))}</div>
+   <div class="card"><div style="font-weight:600;margin-bottom:8px;">Income Categories</div>${tableHTML(["Category","Budget"],inc.map(row))}</div>
+  </div>`;
+}
+
+/* ---------- INCOME / EXPENSE ---------- */
+function pTx(type){
+  const tx=DATA.transactions.filter(t=>t.type===type).sort((a,b)=>b.date.localeCompare(a.date));
+  const total=sum(tx,"amount");
+  const accent = type==='income'?GREEN:RED;
+  const rows = tx.slice(0,60).map(t=>`<tr><td style="color:${GREY}">${t.date}</td><td>${t.category}</td><td style="color:${accent};font-weight:600;">${fmt(t.amount)}</td><td style="color:${GREY}">${t.note||''}</td></tr>`);
+  return `<div class="sub">সব ${type==='income'?'আয়':'খরচ'} এন্ট্রি</div>
+  <div class="card" style="margin-bottom:16px;"><div class="kpi-label">Total ${type==='income'?'Income':'Expense'}</div><div class="kpi-val" style="color:${accent}">${fmt(total)}</div><div class="badge">${tx.length} entries</div></div>
+  <div class="card">${tableHTML(["Date","Category","Amount","Note"],rows)}</div>`;
+}
+
+/* ---------- CASH FLOW ---------- */
+function pCashflow(){
+  const months=[...new Set(DATA.transactions.map(t=>monthKey(t.date)))].sort();
+  let running=0;
+  const series=months.map(m=>{
+    const tx=DATA.transactions.filter(t=>monthKey(t.date)===m);
+    const inc=sum(tx.filter(t=>t.type==='income'),'amount'), exp=sum(tx.filter(t=>t.type==='expense'),'amount');
+    running+=inc-exp;
+    return {m:monthLabel(m),inc,exp,running};
+  });
+  return `<div class="sub">আয়-ব্যয়ের গতিপথ</div>
+  <div class="card" style="margin-bottom:16px;">${chartCanvas("cf_bar","bar",{data:{labels:series.map(s=>s.m),datasets:[{label:"Income",data:series.map(s=>s.inc),backgroundColor:BLUE},{label:"Expense",data:series.map(s=>s.exp),backgroundColor:RED}]},options:tooltipColor()})}</div>
+  <div class="card">${chartCanvas("cf_line","line",{data:{labels:series.map(s=>s.m),datasets:[{label:"Cumulative Net",data:series.map(s=>s.running),borderColor:GREEN,backgroundColor:"rgba(48,209,88,.2)",fill:true,tension:.3}]},options:tooltipColor()})}</div>`;
+}
+
+/* ---------- SUBSCRIPTIONS ---------- */
+function pSubs(){
+  const monthlyCost=s=>s.cycle==='yearly'? s.amount/12 : s.amount;
+  const active=DATA.subscriptions.filter(s=>s.active);
+  const rows=DATA.subscriptions.map(s=>`<tr style="opacity:${s.active?1:.4}"><td>${s.name}</td><td style="font-weight:600;">${fmt(s.amount)}</td><td style="color:${GREY}">${s.cycle}</td><td style="color:${GREY}">${s.category}</td><td style="color:${GREY}">${s.nextDate}</td></tr>`);
+  return `<div class="sub">রিকারিং পেমেন্ট</div>
+  <div class="grid g2" style="margin-bottom:16px;">${kpi("Monthly Recurring",fmt(sum(active.map(s=>({amount:monthlyCost(s)})),"amount")))}${kpi("Yearly Projection",fmt(sum(active.map(s=>({amount:monthlyCost(s)})),"amount")*12),GOLD)}</div>
+  <div class="card">${tableHTML(["Name","Amount","Cycle","Category","Next Date"],rows)}</div>`;
+}
+
+/* ---------- YEARLY COMPARISON ---------- */
+function pYearly(){
+  const snaps=[...DATA.yearlySnapshots].sort((a,b)=>a.year-b.year);
+  const rows=snaps.map(s=>`<tr><td style="font-weight:600;">${s.year}</td><td style="color:${BLUE}">${fmt(s.income)}</td><td style="color:${RED}">${fmt(s.expenses)}</td><td style="color:${GOLD}">${fmt(s.netWorth)}</td><td style="color:${GREEN}">${fmt(s.totalSavings)}</td><td style="color:${ORANGE}">${fmt(s.totalDebt)}</td></tr>`);
+  return `<div class="sub">বছরভিত্তিক তুলনা</div>
+  <div class="grid g2" style="margin-bottom:16px;">
+   <div class="card">${chartCanvas("y_bar","bar",{data:{labels:snaps.map(s=>s.year),datasets:[{label:"Income",data:snaps.map(s=>s.income),backgroundColor:BLUE},{label:"Expenses",data:snaps.map(s=>s.expenses),backgroundColor:RED}]},options:tooltipColor()})}</div>
+   <div class="card">${chartCanvas("y_line","line",{data:{labels:snaps.map(s=>s.year),datasets:[{label:"Net Worth",data:snaps.map(s=>s.netWorth),borderColor:GOLD,tension:.3}]},options:tooltipColor()})}</div>
+  </div>
+  <div class="card">${tableHTML(["Year","Income","Expenses","Net Worth","Savings","Debt"],rows)}</div>`;
+}
+
+/* ---------- REPORTS ---------- */
+function pReports(){
+  const nw=netWorth(),as=totalAssets(),db=totalDebt();
+  const snap=[...DATA.yearlySnapshots].sort((a,b)=>b.year-a.year)[0];
+  const text = `FREEDOM FINANCIAL SYSTEM — MASTER REPORT
+Generated: ${new Date().toLocaleDateString()}
+
+NET WORTH SUMMARY
+Total Assets: ${fmt(as)}
+Total Debt: ${fmt(db)}
+Net Worth: ${fmt(nw)}
+
+LATEST YEAR (${snap?snap.year:'—'})
+Income: ${snap?fmt(snap.income):'—'}
+Expenses: ${snap?fmt(snap.expenses):'—'}
+
+EMERGENCY FUND
+Current: ${fmt(DATA.emergencyFund.currentAmount)} / Target: ${fmt(DATA.emergencyFund.monthlyExpenses*DATA.emergencyFund.targetMonths)}
+
+GOALS (${DATA.goals.length})
+${DATA.goals.map(g=>`- ${g.name}: ${fmt(g.currentAmount)} / ${fmt(g.targetAmount)}`).join("\n")}
+
+SUBSCRIPTIONS ACTIVE: ${DATA.subscriptions.filter(s=>s.active).length}`;
+  return `<div class="sub">অটো-জেনারেটেড রিপোর্ট</div>
+  <div class="card"><pre style="white-space:pre-wrap;font-family:ui-monospace,monospace;font-size:12px;line-height:1.7;">${text}</pre></div>
+  <button class="btn ghost" style="margin-top:12px;" onclick="window.print()">🖨 Print</button>`;
+}
+
+/* ---------- EXCEL IMPORT ---------- */
+function sheetJson(wb,name){
+  const ws = wb.Sheets[name];
+  if(!ws) return [];
+  return XLSX.utils.sheet_to_json(ws, {defval:""});
+}
+function toDateStr(v){
+  if(v instanceof Date) return v.toISOString().slice(0,10);
+  if(typeof v==='number'){ const d=XLSX.SSF.parse_date_code(v); return `${d.y}-${String(d.m).padStart(2,'0')}-${String(d.d).padStart(2,'0')}`; }
+  return String(v||"").slice(0,10);
+}
+function handleExcelFile(e){
+  const file=e.target.files[0]; if(!file) return;
+  const reader=new FileReader();
+  reader.onload=(ev)=>{
+    const wb = XLSX.read(ev.target.result,{type:"array",cellDates:true});
+    DATA.assets = sheetJson(wb,"Assets").map(r=>({name:r.Name,category:r.Category,value:Number(r.Value)||0,notes:r.Notes||"",date:toDateStr(r.Date)}));
+    DATA.liabilities = sheetJson(wb,"Liabilities").map(r=>({name:r.Name,category:r.Category,balance:Number(r.Balance)||0,notes:r.Notes||"",date:toDateStr(r.Date)}));
+    DATA.loans = sheetJson(wb,"Loans").map(r=>({name:r.Name,lender:r.Lender,type:r.Type,principal:Number(r.Principal)||0,balance:Number(r.Balance)||0,interestRate:Number(r.InterestRate)||0,monthlyPayment:Number(r.MonthlyPayment)||0,startDate:toDateStr(r.StartDate),termMonths:Number(r.TermMonths)||0}));
+    DATA.goals = sheetJson(wb,"Goals").map(r=>({name:r.Name,category:r.Category,targetAmount:Number(r.TargetAmount)||0,currentAmount:Number(r.CurrentAmount)||0,targetDate:toDateStr(r.TargetDate),priority:r.Priority||"medium"}));
+    DATA.budget = sheetJson(wb,"Budget").map(r=>({name:r.CategoryName,type:r.Type,budget:Number(r.MonthlyBudget)||0}));
+    DATA.transactions = sheetJson(wb,"Transactions").map(r=>({type:r.Type,date:toDateStr(r.Date),category:r.Category,amount:Number(r.Amount)||0,note:r.Note||""}));
+    DATA.subscriptions = sheetJson(wb,"Subscriptions").map(r=>({name:r.Name,amount:Number(r.Amount)||0,cycle:r.Cycle,category:r.Category,nextDate:toDateStr(r.NextDate),active:String(r.Active).toUpperCase()!=="FALSE"}));
+    const efRows = sheetJson(wb,"EmergencyFund");
+    if(efRows[0]) DATA.emergencyFund = {monthlyExpenses:Number(efRows[0].MonthlyExpenses)||0,targetMonths:Number(efRows[0].TargetMonths)||6,currentAmount:Number(efRows[0].CurrentAmount)||0};
+    DATA.yearlySnapshots = sheetJson(wb,"YearlySnapshots").map(r=>({year:Number(r.Year),income:Number(r.Income)||0,expenses:Number(r.Expenses)||0,netWorth:Number(r.NetWorth)||0,totalSavings:Number(r.TotalSavings)||0,totalDebt:Number(r.TotalDebt)||0}));
+    const setRows = sheetJson(wb,"Settings");
+    const curRow = setRows.find(r=>r.Key==="Currency");
+    DATA.currency = curRow? curRow.Value : "৳";
+    document.getElementById("dataStore").textContent = JSON.stringify(DATA);
+    document.getElementById("downloadBtn").style.display="block";
+    active="overview"; renderNav(); renderPage();
+  };
+  reader.readAsArrayBuffer(file);
+}
+document.getElementById("fileInput").addEventListener("change", handleExcelFile);
+
+document.getElementById("downloadBtn").addEventListener("click", ()=>{
+  const clone = document.documentElement.cloneNode(true);
+  clone.querySelector("#downloadBtn").remove();
+  const html = "<!DOCTYPE html>\n" + clone.outerHTML;
+  const blob = new Blob([html], {type:"text/html"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = "index.html"; a.click();
+  URL.revokeObjectURL(url);
+});
+
+/* Load embedded data if present (for the exported/static version) */
+(function initFromStore(){
+  try{
+    const stored = JSON.parse(document.getElementById("dataStore").textContent || "{}");
+    if(stored && (stored.assets?.length || stored.transactions?.length || stored.loans?.length || stored.liabilities?.length)){
+      DATA = Object.assign(DATA, stored);
+      document.getElementById("downloadBtn").style.display="block";
+    }
+  }catch(e){}
+})();
+
+renderNav();
+renderPage();
+</script>
+
+
+</body></html>
