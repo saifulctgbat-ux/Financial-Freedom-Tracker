@@ -2,7 +2,6 @@
 <html lang="bn">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
 <title>Freedom Financial System — Master Dashboard</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
@@ -33,60 +32,29 @@ h2{font-size:22px;margin:0 0 4px;} .sub{color:var(--grey);font-size:12.5px;margi
 .uploadZone:hover{border-color:var(--gold);color:#fff;}
 .btn{background:var(--gold);color:#000;border:none;border-radius:9px;padding:9px 16px;font-weight:600;font-size:12.5px;cursor:pointer;}
 .btn.ghost{background:rgba(255,255,255,.07);color:#fff;}
-.topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;gap:10px;}
+.topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;}
 .section{display:none;} .section.active{display:block;}
 canvas{max-height:260px;}
 .badge{font-size:10px;color:var(--grey);}
 .emptyState{padding:30px;text-align:center;color:var(--grey);font-size:12.5px;}
-.tableWrap{overflow-x:auto;-webkit-overflow-scrolling:touch;}
-.hamburger{display:none;background:rgba(255,255,255,.07);border:none;border-radius:8px;width:38px;height:38px;color:#fff;font-size:18px;cursor:pointer;flex-shrink:0;}
-.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:40;}
-
-@media (max-width:860px){
-  main{padding:16px;}
-  h2{font-size:19px;}
-  .g4{grid-template-columns:repeat(2,1fr);}
-  .g3{grid-template-columns:repeat(2,1fr);}
-  .g2{grid-template-columns:1fr;}
-  .hamburger{display:block;}
-  aside{position:fixed;left:-260px;top:0;height:100vh;width:230px;z-index:50;background:#000;transition:left .25s ease;box-shadow:0 0 30px rgba(0,0,0,.6);}
-  aside.open{left:0;}
-  aside.open ~ .overlay,.overlay.open{display:block;}
-  .card{padding:14px;}
-  table{font-size:11.5px;}
-  th,td{padding:7px 6px;white-space:nowrap;}
-  .topbar .badge{font-size:10px;}
-}
-@media (max-width:480px){
-  .g4,.g3{grid-template-columns:1fr;}
-  main{padding:12px;}
-  .card{padding:12px;}
-}
 </style>
 </head>
 <body>
-<script id="dataStore" type="application/json">{}</script>
 <div class="app">
-<aside id="sidebar">
+<aside>
   <div class="brand"><div class="logo">F</div><div><div style="font-weight:600;font-size:14px;">Freedom System</div><div class="badge">Master Dashboard</div></div></div>
   <nav id="navList"></nav>
   <div class="card" style="margin-top:18px;">
     <div class="badge">Net Worth</div>
     <div id="sideNW" style="font-size:19px;font-weight:700;color:var(--gold);margin-top:4px;">৳0</div>
-    <label class="btn ghost" id="uploadLabel" style="display:block;text-align:center;margin-top:12px;cursor:pointer;">
-      📤 Excel আপলোড / আপডেট
+    <label class="btn ghost" style="display:block;text-align:center;margin-top:12px;cursor:pointer;">
+      📤 Excel আপলোড
       <input type="file" id="fileInput" accept=".xlsx,.xls" style="display:none;">
     </label>
-    <button class="btn" id="downloadBtn" style="display:none;width:100%;margin-top:8px;">⬇️ Download for GitHub</button>
   </div>
 </aside>
-<div class="overlay" id="overlay"></div>
 <main>
-  <div class="topbar">
-    <button class="hamburger" id="hamburger">☰</button>
-    <div class="badge" id="pageTitle" style="text-transform:uppercase;letter-spacing:1px;"></div>
-    <div style="width:38px;" class="hamburger"></div>
-  </div>
+  <div class="topbar"><div class="badge" id="pageTitle" style="text-transform:uppercase;letter-spacing:1px;"></div></div>
   <div id="content"></div>
 </main>
 </div>
@@ -133,17 +101,8 @@ let active="overview";
 
 function renderNav(){
   document.getElementById("navList").innerHTML = nav.map(n=>`<button data-k="${n.key}" class="${active===n.key?'active':''}">${n.label}</button>`).join("");
-  [...document.querySelectorAll("nav button")].forEach(b=>b.onclick=()=>{active=b.dataset.k;renderNav();renderPage();closeSidebar();});
+  [...document.querySelectorAll("nav button")].forEach(b=>b.onclick=()=>{active=b.dataset.k;renderNav();renderPage();});
 }
-function closeSidebar(){
-  document.getElementById("sidebar").classList.remove("open");
-  document.getElementById("overlay").classList.remove("open");
-}
-document.getElementById("hamburger").addEventListener("click", ()=>{
-  document.getElementById("sidebar").classList.toggle("open");
-  document.getElementById("overlay").classList.toggle("open");
-});
-document.getElementById("overlay").addEventListener("click", closeSidebar);
 
 function charts(){return {}} // placeholder cleared each render via canvas re-creation
 
@@ -179,7 +138,7 @@ function tooltipColor(){return {plugins:{legend:{labels:{color:"#EBEBF0"}}},scal
 function kpi(label,val,color){return `<div class="card"><div class="kpi-label">${label}</div><div class="kpi-val" style="color:${color||'#fff'}">${val}</div></div>`;}
 function tableHTML(headers,rows){
   if(!rows.length) return `<div class="emptyState">কোনো ডাটা নেই</div>`;
-  return `<div class="tableWrap"><table><thead><tr>${headers.map(h=>`<th>${h}</th>`).join("")}</tr></thead><tbody>${rows.join("")}</tbody></table></div>`;
+  return `<table><thead><tr>${headers.map(h=>`<th>${h}</th>`).join("")}</tr></thead><tbody>${rows.join("")}</tbody></table>`;
 }
 
 /* ---------- OVERVIEW ---------- */
@@ -422,7 +381,7 @@ function toDateStr(v){
   if(typeof v==='number'){ const d=XLSX.SSF.parse_date_code(v); return `${d.y}-${String(d.m).padStart(2,'0')}-${String(d.d).padStart(2,'0')}`; }
   return String(v||"").slice(0,10);
 }
-function handleExcelFile(e){
+document.getElementById("fileInput").addEventListener("change", (e)=>{
   const file=e.target.files[0]; if(!file) return;
   const reader=new FileReader();
   reader.onload=(ev)=>{
@@ -440,35 +399,10 @@ function handleExcelFile(e){
     const setRows = sheetJson(wb,"Settings");
     const curRow = setRows.find(r=>r.Key==="Currency");
     DATA.currency = curRow? curRow.Value : "৳";
-    document.getElementById("dataStore").textContent = JSON.stringify(DATA);
-    document.getElementById("downloadBtn").style.display="block";
     active="overview"; renderNav(); renderPage();
   };
   reader.readAsArrayBuffer(file);
-}
-document.getElementById("fileInput").addEventListener("change", handleExcelFile);
-
-document.getElementById("downloadBtn").addEventListener("click", ()=>{
-  const clone = document.documentElement.cloneNode(true);
-  clone.querySelector("#downloadBtn").remove();
-  const html = "<!DOCTYPE html>\n" + clone.outerHTML;
-  const blob = new Blob([html], {type:"text/html"});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url; a.download = "index.html"; a.click();
-  URL.revokeObjectURL(url);
 });
-
-/* Load embedded data if present (for the exported/static version) */
-(function initFromStore(){
-  try{
-    const stored = JSON.parse(document.getElementById("dataStore").textContent || "{}");
-    if(stored && (stored.assets?.length || stored.transactions?.length || stored.loans?.length || stored.liabilities?.length)){
-      DATA = Object.assign(DATA, stored);
-      document.getElementById("downloadBtn").style.display="block";
-    }
-  }catch(e){}
-})();
 
 renderNav();
 renderPage();
